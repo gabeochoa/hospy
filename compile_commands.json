@@ -1,0 +1,32 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++2a",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wuninitialized",
+      "-Wshadow",
+      "-Wmost",
+      "-Wconversion",
+      "-g",
+      "-I/Users/gabeochoa/homebrew/Cellar/raylib/4.5.0/include",
+      "-DTRACY_ENABLE",
+      "-Wno-deprecated-volatile",
+      "-Wno-missing-field-initializers",
+      "-Wno-c99-extensions",
+      "-Wno-unused-function",
+      "-Wno-sign-conversion",
+      "-Wno-implicit-int-float-conversion",
+      "-Ivendor/",
+      "-c",
+      "-o",
+      "output/src/game.o",
+      "src/game.cpp"
+    ],
+    "directory": "/Users/gabeochoa/p/hospy",
+    "file": "/Users/gabeochoa/p/hospy/src/game.cpp",
+    "output": "/Users/gabeochoa/p/hospy/output/src/game.o"
+  }
+]

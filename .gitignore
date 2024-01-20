@@ -1,0 +1,24 @@
+**/x64/Debug/*
+**/x64/.vs/*
+*.dSYM
+.cache/
+.DS_Store
+**/.vs
+.vscode/
+log
+game.obj
+WinPharmaSea/**/
+pharmasea/WinPharmaSea/**/
+pharmasea.exe
+.obsidian/
+release/*
+*.o
+*.d
+cppcheck_err
+*.gcno
+*.gcov
+release*
+recording.trace/
+output/
+# until they are used in the project, hiding the kennynl folder
+art_storage/*
