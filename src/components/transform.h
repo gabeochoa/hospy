@@ -7,17 +7,22 @@
 struct Transform : public BaseComponent {
   virtual ~Transform() {}
 
-  vec3 size = {1.f, 1.f, 1.f};
+  vec2 size = {1.f, 1.f};
   vec3 position;
 
   [[nodiscard]] vec2 as2() const { return vec::to2(this->position); }
+  void update(vec3 p) { position = p; }
+  void init(vec3 p, vec2 sze) {
+    position = p;
+    size = sze;
+  }
 
   /*
    * Get the bounding box for this entity
    * @returns BoundingBox the box
    * */
   [[nodiscard]] raylib::BoundingBox bounds() const {
-    return get_bounds(this->position, this->size);
+    return get_bounds(this->position, vec::to3(this->size));
   }
 };
 

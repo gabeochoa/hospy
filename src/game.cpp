@@ -3,13 +3,42 @@
 #include "vendor_include.h"
 //
 
+#include "components/transform.h"
 #include "entity.h"
+#include "entity_helper.h"
+
+//
+#include "system/system.h"
 
 int LOG_LEVEL = (int)LogLevel::INFO;
 
+void make_entity(Entity &entity, vec3 pos, vec2 size) {
+  entity.addComponent<Transform>().init(pos, size);
+}
+
+Entity &get_new_entity(vec2 pos, vec2 size) {
+  Entity &e = EntityHelper::createEntity();
+  make_entity(e, vec::to3(pos), size);
+  return e;
+}
+
 using namespace raylib;
 
-int main(int argc, char *argv[]) {
+RenderingSystem rendering_system;
+
+void update() {}
+
+void draw() {
+  const auto &entities = EntityHelper::get_entities();
+  BeginDrawing();
+  ClearBackground(RAYWHITE);
+  DrawText(fmt::format("entities: {}", entities.size()).c_str(), 20, 20, 20,
+           DARKGRAY);
+  rendering_system.run_on(entities, 0);
+  EndDrawing();
+}
+
+int main(int, char **) {
   // Initialization
   //--------------------------------------------------------------------------------------
   const int screenWidth = 1920;
@@ -22,67 +51,19 @@ int main(int argc, char *argv[]) {
              "raylib [shapes] example - basic shapes drawing");
   SetTraceLogLevel(LOG_LEVEL);
 
-  float rotation = 0.0f;
-
   SetTargetFPS(60); // Set our game to run at 60 frames-per-second
-  //--------------------------------------------------------------------------------------
+                    //
+
+  Entity &hi = get_new_entity({200, 20}, {200, 80});
 
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key
   {
-    // Update
-    //----------------------------------------------------------------------------------
-    rotation += 0.2f;
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-
-    ClearBackground(RAYWHITE);
-
-    DrawText("some basic shapes available on raylib", 20, 20, 20, DARKGRAY);
-
-    // Circle shapes and lines
-    DrawCircle(screenWidth / 5, 120, 35, DARKBLUE);
-    DrawCircleGradient(screenWidth / 5, 220, 60, GREEN, SKYBLUE);
-    DrawCircleLines(screenWidth / 5, 340, 80, DARKBLUE);
-
-    // Rectangle shapes and lines
-    DrawRectangle(screenWidth / 4 * 2 - 60, 100, 120, 60, RED);
-    DrawRectangleGradientH(screenWidth / 4 * 2 - 90, 170, 180, 130, MAROON,
-                           GOLD);
-    DrawRectangleLines(screenWidth / 4 * 2 - 40, 320, 80, 60,
-                       ORANGE); // NOTE: Uses QUADS internally, not lines
-
-    // Triangle shapes and lines
-    DrawTriangle((Vector2){screenWidth / 4.0f * 3.0f, 80.0f},
-                 (Vector2){screenWidth / 4.0f * 3.0f - 60.0f, 150.0f},
-                 (Vector2){screenWidth / 4.0f * 3.0f + 60.0f, 150.0f}, VIOLET);
-
-    DrawTriangleLines((Vector2){screenWidth / 4.0f * 3.0f, 160.0f},
-                      (Vector2){screenWidth / 4.0f * 3.0f - 20.0f, 230.0f},
-                      (Vector2){screenWidth / 4.0f * 3.0f + 20.0f, 230.0f},
-                      DARKBLUE);
-
-    // Polygon shapes and lines
-    DrawPoly((Vector2){screenWidth / 4.0f * 3, 330}, 6, 80, rotation, BROWN);
-    DrawPolyLines((Vector2){screenWidth / 4.0f * 3, 330}, 6, 90, rotation,
-                  BROWN);
-    DrawPolyLinesEx((Vector2){screenWidth / 4.0f * 3, 330}, 6, 85, rotation, 6,
-                    BEIGE);
-
-    // NOTE: We draw all LINES based shapes together to optimize internal
-    // drawing, this way, all LINES are rendered in a single draw pass
-    DrawLine(18, 42, screenWidth - 18, 42, BLACK);
-    EndDrawing();
-    //----------------------------------------------------------------------------------
+    update();
+    draw();
   }
 
-  // De-Initialization
-  //--------------------------------------------------------------------------------------
-  CloseWindow(); // Close window and OpenGL context
-  //--------------------------------------------------------------------------------------
+  CloseWindow();
 
   return 0;
 }
