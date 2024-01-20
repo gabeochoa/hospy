@@ -51,7 +51,7 @@ struct EntityQuery {
     EntityType type;
     explicit WhereType(const EntityType &t) : type(t) {}
     virtual bool operator()(const Entity &entity) const override {
-      return check_type(entity, type);
+      return Entity::check_type(entity, type);
     }
   };
   auto &whereType(const EntityType &t) { return add_mod(new WhereType(t)); }
@@ -164,15 +164,15 @@ struct EntityQuery {
   }
 
   struct WhereCollides : Modification {
-    BoundingBox bounds;
+    raylib::BoundingBox bounds;
 
-    explicit WhereCollides(BoundingBox box) : bounds(box) {}
+    explicit WhereCollides(raylib::BoundingBox box) : bounds(box) {}
 
     virtual bool operator()(const Entity &entity) const override {
       return CheckCollisionBoxes(entity.get<Transform>().bounds(), bounds);
     }
   };
-  auto &whereCollides(BoundingBox box) {
+  auto &whereCollides(raylib::BoundingBox box) {
     return add_mod(new WhereCollides(box));
   }
   /////////

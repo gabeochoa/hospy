@@ -1,8 +1,11 @@
 #pragma once
 
-namespace raylib {
+// this has to be before the raylib thing
+// because otherwise nullptr and int and whatnot
+// will be inside the namespace
+#include "std_include.h"
+
 #include "engine/graphics.h"
-}
 
 #ifdef __APPLE__
 #pragma clang diagnostic push

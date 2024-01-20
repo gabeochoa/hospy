@@ -6,13 +6,11 @@
 #include "components/base_component.h"
 #include "engine/assert.h"
 #include "engine/log.h"
+#include "engine/type_name.h"
+#include "entity_type.h"
 
 using ComponentBitSet = std::bitset<max_num_components>;
 using ComponentArray = std::array<BaseComponent *, max_num_components>;
-
-enum EntityType {
-  Unknown,
-};
 
 static std::atomic_int ENTITY_ID_GEN = 0;
 
@@ -26,7 +24,11 @@ struct Entity {
   ComponentArray componentArray;
 
   Entity() : id(ENTITY_ID_GEN++) {}
-  ~Entity();
+  ~Entity() {
+    for (auto &ptr : componentArray) {
+      delete ptr;
+    }
+  }
   Entity(const Entity &) = delete;
   Entity(Entity &&other) noexcept = default;
 
@@ -108,7 +110,9 @@ struct Entity {
     addAll<B, Rest...>();
   }
 
-  const std::string_view name() const;
+  const std::string_view name() const {
+    return magic_enum::enum_name<EntityType>(type);
+  }
 
   template <typename T> void warnIfMissingComponent() const {
     if (this->is_missing<T>()) {
@@ -128,6 +132,10 @@ struct Entity {
     warnIfMissingComponent<T>();
     BaseComponent *comp = componentArray.at(components::get_type_id<T>());
     return *static_cast<T *>(comp);
+  }
+
+  static bool check_type(const Entity &entity, EntityType other_type) {
+    return other_type == entity.type;
   }
 };
 

@@ -13,13 +13,10 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
+namespace raylib {
 
 #include <raylib.h>
 #include <rlgl.h>
-
-typedef Vector2 vec2;
-typedef Vector3 vec3;
-typedef Vector4 vec4;
 
 #undef RAYLIB_OP_OVERLOADS_RAYGUI
 #include <RaylibOpOverloads.h>
@@ -28,6 +25,12 @@ typedef Vector4 vec4;
 inline bool operator<(const Vector2 &l, const Vector2 &r) {
   return (l.x < r.x) || ((l.x == r.x) && (l.y < r.y));
 }
+
+} // namespace raylib
+
+typedef raylib::Vector2 vec2;
+typedef raylib::Vector3 vec3;
+typedef raylib::Vector4 vec4;
 
 #ifdef __APPLE__
 #pragma clang diagnostic pop

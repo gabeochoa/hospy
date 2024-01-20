@@ -9,6 +9,7 @@
 #include "vendor_include.h"
 
 //
+#include "components/transform.h"
 #include "entity.h"
 
 using Entities = std::vector<std::shared_ptr<Entity>>;

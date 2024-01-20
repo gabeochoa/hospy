@@ -3,10 +3,13 @@
 #include "globals.h" // where LOG_LEVEL is located
 
 enum struct LogLevel {
-  LOG_ALOG_ = 0,
-  TRACE = 1,
-  INFO = 2,
-  WARN = 3,
-  ERROR = 4,
-  NOTHING = 99,
+  ALL = 0, // Display all logs
+  TRACE,   // Trace logging, intended for internal use only
+  DEBUG, // Debug logging, used for internal debugging, it should be disabled on
+         // release builds
+  INFO,  // Info logging, used for program execution info
+  WARN,  // Warning logging, used on recoverable failures
+  ERROR, // Error logging, used on unrecoverable failures
+  FATAL, // Fatal logging, used to abort program: exit(EXIT_FAILURE)
+  NONE   // Disable logging
 };

@@ -50,17 +50,6 @@ Entity &EntityHelper::createEntityWithOptions(const CreationOptions &options) {
   }
 
   return *e;
-
-  // if (!e->add_to_navmesh()) {
-  // return;
-  // }
-  // auto nav = GLOBALS.get_ptr<NavMesh>("navmesh");
-  // Note: addShape merges shapes next to each other
-  //      this reduces the amount of loops overall
-
-  // nav->addShape(getPolyForEntity(e));
-  // nav->addEntity(e->id, getPolyForEntity(e));
-  // cache_is_walkable.clear();
 }
 
 void EntityHelper::markIDForCleanup(int e_id) {
@@ -76,12 +65,6 @@ void EntityHelper::markIDForCleanup(int e_id) {
 }
 
 void EntityHelper::removeEntity(int e_id) {
-  // if (e->add_to_navmesh()) {
-  // auto nav = GLOBALS.get_ptr<NavMesh>("navmesh");
-  // nav->removeEntity(e->id);
-  // cache_is_walkable.clear();
-  // }
-
   auto &entities = get_entities();
 
   auto newend = std::remove_if(
@@ -90,17 +73,6 @@ void EntityHelper::removeEntity(int e_id) {
 
   entities.erase(newend, entities.end());
 }
-
-//  Polygon getPolyForEntity(std::shared_ptr<Entity> e) {
-// vec2 pos = vec::to2(e->snap_position());
-// Rectangle rect = {
-// pos.x,
-// pos.y,
-// TILESIZE,
-// TILESIZE,
-// };
-// return Polygon(rect);
-// }
 
 void EntityHelper::cleanup() {
   // Cleanup entities marked cleanup
@@ -169,11 +141,12 @@ OptEntity EntityHelper::getEntityForID(int id) {
 }
 
 OptEntity EntityHelper::getClosestOfType(const Entity &entity,
-                                         const EntityType &type, float range) {
+                                         const EntityType &_type, float range) {
   const Transform &transform = entity.get<Transform>();
   return EntityHelper::getClosestMatchingEntity(
-      transform.as2(), range,
-      [type](const Entity &entity) { return check_type(entity, type); });
+      transform.as2(), range, [](const Entity &) {
+        return true; /*check_type(entity, type);*/
+      });
 }
 
 // TODO :BE: change other debugname filter guys to this
@@ -251,14 +224,16 @@ RefEntities EntityHelper::getAllInRange(vec2 range_min, vec2 range_max) {
 EntityQuery &getOverlappingSolidEntityInRangeQuery(
     vec2 range_min, vec2 range_max,
     const std::function<bool(const Entity &)> &filter) {
-  return EntityQuery()                   //
-      .whereHasComponent<IsSolid>()      //
+  return EntityQuery() //
+                       //// TODO
+      // .whereHasComponent<IsSolid>()      //
       .whereInside(range_min, range_max) //
       .whereLambdaExistsAndTrue(filter)  //
       .whereLambda([&](const Entity &entity) -> bool {
-        return EntityQuery()                   //
-            .whereNotID(entity.id)             //
-            .whereHasComponent<IsSolid>()      //
+        return EntityQuery()       //
+            .whereNotID(entity.id) //
+                                   // TODO
+            // .whereHasComponent<IsSolid>()      //
             .whereInside(range_min, range_max) //
             .wherePositionMatches(entity)      //
             .first()                           //
@@ -280,77 +255,11 @@ OptEntity EntityHelper::getOverlappingEntityIfExists(
   return EntityQuery()                  //
       .whereNotID(entity.id)            //
       .whereLambdaExistsAndTrue(filter) //
-      .whereHasComponent<IsSolid>()     //
-      .whereInRange(position, range)    //
-      .wherePositionMatches(entity)     //
+                                        //// TODO
+      // .whereHasComponent<IsSolid>()     //
+      .whereInRange(position, range) //
+      .wherePositionMatches(entity)  //
       .gen_first();
-}
-
-// TODO :INFRA: i think this is slower because we are doing "outside mesh"
-// as outside we should probably have just make some tiles for inside the
-// map
-// ('.' on map for example) and use those to mark where people can walk and
-// where they cant
-// static bool isWalkable_impl(const vec2& pos) {
-// auto nav = GLOBALS.get_ptr<NavMesh>("navmesh");
-// if (!nav) {
-// return true;
-// }
-//
-// for (auto kv : nav->entityShapes) {
-// auto s = kv.second;
-// if (s.inside(pos)) return false;
-// }
-// return true;
-// }
-
-// TODO :PBUG: need to invalidate any current valid paths
-void EntityHelper::invalidatePathCacheLocation(vec2 pos) {
-  if (!is_server()) {
-    // Turning off the warning because of input_process_manager _proc_single
-    // log_warn("client code is trying to invalide path cache");
-    return;
-  }
-  cache_is_walkable.erase(pos);
-}
-
-void EntityHelper::invalidatePathCache() {
-  if (!is_server()) {
-    // Turning off the warning because of input_process_manager _proc_single
-    // log_warn("client code is trying to invalide path cache");
-    return;
-  }
-  cache_is_walkable.clear();
-}
-
-bool EntityHelper::isWalkable(vec2 pos) {
-  TRACY_ZONE_SCOPED;
-  if (!cache_is_walkable.contains(pos)) {
-    bool walkable = isWalkableRawEntities(pos);
-    cache_is_walkable[pos] = walkable;
-  }
-  return cache_is_walkable[pos];
-}
-
-// each target.get and path_find runs through all entities
-// so this will just get slower and slower over time
-bool EntityHelper::isWalkableRawEntities(const vec2 &pos) {
-  TRACY_ZONE_SCOPED;
-  bool hit_impassible_entity = false;
-  forEachEntity([&](Entity &entity) {
-    // Ignore non colliable objects
-    if (!system_manager::input_process_manager::is_collidable(entity))
-      return ForEachFlow::Continue;
-    // ignore things that are not at this location
-    if (vec::distance(entity.template get<Transform>().as2(), pos) >
-        TILESIZE / 2.f)
-      return ForEachFlow::Continue;
-
-    // is_collidable and inside this square
-    hit_impassible_entity = true;
-    return ForEachFlow::Break;
-  });
-  return !hit_impassible_entity;
 }
 
 #pragma clang diagnostic pop

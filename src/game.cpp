@@ -1,7 +1,13 @@
 
-#include "engine/graphics.h"
+#include "engine/globals.h"
+#include "vendor_include.h"
+//
 
 #include "entity.h"
+
+int LOG_LEVEL = (int)LogLevel::INFO;
+
+using namespace raylib;
 
 int main(int argc, char *argv[]) {
   // Initialization
@@ -9,8 +15,12 @@ int main(int argc, char *argv[]) {
   const int screenWidth = 1920;
   const int screenHeight = 1080;
 
+  // This goes above Init since that loves to spew errors
+  SetTraceLogLevel(LOG_ERROR);
+
   InitWindow(screenWidth, screenHeight,
              "raylib [shapes] example - basic shapes drawing");
+  SetTraceLogLevel(LOG_LEVEL);
 
   float rotation = 0.0f;
 
