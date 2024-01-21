@@ -4,6 +4,4 @@
 
 struct IsDraggable : public BaseComponent {
   virtual ~IsDraggable() {}
-
-  bool is_selected;
 };

@@ -3,6 +3,8 @@
 #include "../entity_helper.h"
 
 #include "../components/is_draggable.h"
+#include "../components/is_slot.h"
+#include "../components/snaps_to_slot.h"
 
 struct System {
   virtual void run_on(Entities &, float){};
@@ -51,6 +53,20 @@ struct DraggingSystem : System {
   inline bool is_active_or_hot(int id) { return is_hot(id) || is_active(id); }
   inline bool is_active_and_hot(int id) { return is_hot(id) && is_active(id); }
 
+  void determine_active(Entity &entity) {
+    const Transform &transform = entity.get<Transform>();
+    bool inside = ext::is_mouse_inside(transform.rect());
+    if (inside) {
+      set_hot(entity.id);
+      if (is_active(EMPTY_ID) && mouse_down) {
+        set_active(entity.id);
+
+        auto mouse_position = ext::get_mouse_position();
+        offset = mouse_position - entity.get<Transform>().as2();
+      }
+    }
+  }
+
   void move_if_dragging(Entity &entity) {
     if (is_active(entity.id)) {
       Transform &transform = entity.get<Transform>();
@@ -62,6 +78,44 @@ struct DraggingSystem : System {
     }
   }
 
+  void snap_if_snappable() {
+    auto maybe_e = EntityHelper::getEntityForID(active_id);
+    if (!maybe_e)
+      return;
+    Entity &entity = maybe_e.asE();
+    if (entity.is_missing<SnapsToSlot>())
+      return;
+
+    auto closest = EntityHelper::getClosestMatchingEntity(
+        entity.get<Transform>().as2(), 1920.f, [this](const Entity &entity) {
+          if (entity.is_missing<IsSlot>())
+            return false;
+          if (entity.get<IsSlot>().held_entity == active_id)
+            return true;
+          return entity.get<IsSlot>().is_empty();
+        });
+    if (!closest) {
+      log_warn(" Could not find any empty slot to snap to");
+      return;
+    }
+
+    SnapsToSlot &snaps = entity.get<SnapsToSlot>();
+
+    // clear old parent
+    auto old_parent = EntityHelper::getEntityForID(snaps.held_by);
+    old_parent->get<IsSlot>().held_entity = -1;
+
+    // write new parent
+    closest->get<IsSlot>().held_entity = entity.id;
+    snaps.held_by = closest->id;
+    Transform &parent_transform = closest->get<Transform>();
+
+    entity.get<Transform>().update({
+        parent_transform.as2().x,
+        parent_transform.as2().y,
+    });
+  }
+
   virtual void run_on(Entities &entities, float dt) override {
     set_hot(EMPTY_ID);
 
@@ -69,18 +123,7 @@ struct DraggingSystem : System {
       if (entity.is_missing<IsDraggable>())
         return;
 
-      const Transform &transform = entity.get<Transform>();
-
-      bool inside = ext::is_mouse_inside(transform.rect());
-      if (inside) {
-        set_hot(entity.id);
-        if (is_active(EMPTY_ID) && mouse_down) {
-          set_active(entity.id);
-
-          auto mouse_position = ext::get_mouse_position();
-          offset = mouse_position - entity.get<Transform>().as2();
-        }
-      }
+      determine_active(entity);
       move_if_dragging(entity);
     });
 
@@ -91,6 +134,8 @@ struct DraggingSystem : System {
         offset = {0, 0};
       }
     } else {
+      snap_if_snappable();
+
       set_active(EMPTY_ID);
       offset = {0, 0};
     }
@@ -98,19 +143,29 @@ struct DraggingSystem : System {
 };
 
 namespace render {
-inline void rect(const Entity &entity, float) {
+inline void rect(const Entity &entity, float, raylib::Color color) {
   const Transform &transform = entity.get<Transform>();
-  vec2 pos = transform.position;
-  vec2 size = transform.size;
-  ext::draw_rectangle(pos, size, raylib::RED);
+  ext::draw_rectangle(transform.position, transform.size, color);
 }
 
 } // namespace render
 
 struct RenderingSystem : System {
   void run_on(const Entities &entities, float dt) const {
-    for_each(entities, dt,
-             [](const Entity &entity, float dt) { render::rect(entity, dt); });
+    for_each(entities, dt, [](const Entity &entity, float dt) {
+      switch (entity.type) {
+      case EntityType::Unknown:
+      case EntityType::x:
+      case EntityType::y:
+      case EntityType::z:
+      case EntityType::Card:
+        render::rect(entity, dt, raylib::RED);
+        break;
+      case EntityType::TraySlot:
+        render::rect(entity, dt, raylib::BLUE);
+        break;
+      }
+    });
   }
 };
 

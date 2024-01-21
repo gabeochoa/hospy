@@ -4,6 +4,8 @@
 //
 
 #include "components/is_draggable.h"
+#include "components/is_slot.h"
+#include "components/snaps_to_slot.h"
 #include "components/transform.h"
 #include "entity.h"
 #include "entity_helper.h"
@@ -20,10 +22,17 @@ void make_entity(Entity &entity, vec2 pos, vec2 size) {
 void make_card(Entity &entity, vec2 pos, vec2 size) {
   make_entity(entity, pos, size);
   entity.addComponent<IsDraggable>();
+  entity.addComponent<SnapsToSlot>();
+}
+
+void make_tray_slot(Entity &entity, vec2 pos, vec2 size) {
+  make_entity(entity, pos, size);
+  entity.addComponent<IsSlot>();
 }
 
 Entity &make_entity(EntityType etype, vec2 pos, vec2 size) {
   Entity &e = EntityHelper::createEntity();
+  e.type = etype;
   switch (etype) {
   case EntityType::Unknown:
   case EntityType::x:
@@ -33,6 +42,9 @@ Entity &make_entity(EntityType etype, vec2 pos, vec2 size) {
     break;
   case EntityType::Card:
     make_card(e, pos, size);
+    break;
+  case EntityType::TraySlot:
+    make_tray_slot(e, pos, size);
     break;
   }
   return e;
@@ -70,15 +82,19 @@ int main(int, char **) {
   // This goes above Init since that loves to spew errors
   SetTraceLogLevel(LOG_ERROR);
 
-  InitWindow(screenWidth, screenHeight,
-             "raylib [shapes] example - basic shapes drawing");
+  InitWindow(screenWidth, screenHeight, "hospy");
   SetTraceLogLevel(LOG_LEVEL);
 
   SetTargetFPS(240); // Set our game to run at 60 frames-per-second
                      //
 
-  make_entity(EntityType::Card, {200, 20}, {200, 80});
-  make_entity(EntityType::Card, {200, 200}, {200, 80});
+  Entity &tray = make_entity(EntityType::TraySlot, {200, 20}, {220, 100});
+  Entity &card = make_entity(EntityType::Card, {200, 200}, {200, 80});
+
+  card.get<SnapsToSlot>().held_by = tray.id;
+  tray.get<IsSlot>().held_entity = card.id;
+
+  Entity &tray2 = make_entity(EntityType::TraySlot, {500, 20}, {220, 100});
 
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key

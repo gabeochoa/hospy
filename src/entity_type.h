@@ -6,13 +6,7 @@
 
 #include "vendor_include.h"
 
-enum struct EntityType {
-  Unknown,
-  x,
-  y,
-  z,
-  Card,
-};
+enum struct EntityType { Unknown, x, y, z, Card, TraySlot };
 
 using EntityTypeSet = std::bitset<magic_enum::enum_count<EntityType>()>;
 
