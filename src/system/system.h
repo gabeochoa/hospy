@@ -4,6 +4,7 @@
 
 #include "../components/is_draggable.h"
 #include "../components/is_slot.h"
+#include "../components/render_tag.h"
 #include "../components/snaps_to_slot.h"
 
 struct System {
@@ -63,6 +64,8 @@ struct DraggingSystem : System {
 
         auto mouse_position = ext::get_mouse_position();
         offset = mouse_position - entity.get<Transform>().as2();
+
+        entity.get<RenderTags>().enable_tag(RenderTagType::Highlight);
       }
     }
   }
@@ -114,6 +117,8 @@ struct DraggingSystem : System {
         parent_transform.as2().x,
         parent_transform.as2().y,
     });
+
+    entity.get<RenderTags>().disable_tag(RenderTagType::Highlight);
   }
 
   virtual void run_on(Entities &entities, float dt) override {
@@ -161,6 +166,21 @@ struct PreRenderingSystem : System {
   }
 };
 
+struct HighlightRenderingSystem : System {
+  void run_on(const Entities &entities, float dt) const {
+    for_each(entities, dt, [](const Entity &entity, float) {
+      const RenderTags &tags = entity.get<RenderTags>();
+      if (tags.missing_tag(RenderTagType::Highlight))
+        return;
+
+      const Transform &transform = entity.get<Transform>();
+      ext::draw_rectangle(transform.position,
+                          {transform.size.x * 1.1f, transform.size.y * 1.1f},
+                          raylib::PINK);
+    });
+  }
+};
+
 struct RenderingSystem : System {
   void run_on(const Entities &entities, float dt) const {
     for_each(entities, dt, [](const Entity &entity, float dt) {
@@ -188,7 +208,8 @@ struct SystemManager {
       new PreRenderingSystem(),
   }};
 
-  std::array<System *, 1> render_systems = {{
+  std::array<System *, 2> render_systems = {{
+      new HighlightRenderingSystem(),
       new RenderingSystem(),
   }};
 

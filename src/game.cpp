@@ -30,6 +30,7 @@ float get_initial_z(EntityType type) {
 
 void make_entity(Entity &entity, vec2 pos, vec2 size) {
   entity.addComponent<Transform>().init(pos, size, get_initial_z(entity.type));
+  entity.addComponent<RenderTags>();
 }
 
 void make_card(Entity &entity, vec2 pos, vec2 size) {
@@ -107,7 +108,8 @@ int main(int, char **) {
   card.get<SnapsToSlot>().held_by = tray.id;
   tray.get<IsSlot>().held_entity = card.id;
 
-  Entity &tray2 = make_entity(EntityType::TraySlot, {500, 20}, {220, 100});
+  make_entity(EntityType::TraySlot, {500, 20}, {220, 100});
+  make_entity(EntityType::TraySlot, {1000, 20}, {220, 100});
 
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key
