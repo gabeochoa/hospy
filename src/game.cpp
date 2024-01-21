@@ -43,18 +43,21 @@ using namespace raylib;
 SystemManager system_manager;
 
 void update() {
+  float dt = raylib::GetFrameTime();
   auto &entities = EntityHelper::get_entities();
-  system_manager.on_update(entities, 0);
+  system_manager.on_update(entities, dt);
 }
 
 void draw() {
+  float dt = raylib::GetFrameTime();
+
   const auto &entities = EntityHelper::get_entities();
   BeginDrawing();
   ext::clear_background(RAYWHITE);
   ext::draw_fps(20, 20);
   DrawText(fmt::format("entities: {}", entities.size()).c_str(), 20, 50, 20,
            DARKGRAY);
-  system_manager.on_render(entities, 0);
+  system_manager.on_render(entities, dt);
   EndDrawing();
 }
 
