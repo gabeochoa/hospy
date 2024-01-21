@@ -163,18 +163,19 @@ struct EntityQuery {
     return add_mod(new WhereInside(range_min, range_max));
   }
 
-  struct WhereCollides : Modification {
-    raylib::BoundingBox bounds;
-
-    explicit WhereCollides(raylib::BoundingBox box) : bounds(box) {}
-
-    virtual bool operator()(const Entity &entity) const override {
-      return CheckCollisionBoxes(entity.get<Transform>().bounds(), bounds);
-    }
-  };
-  auto &whereCollides(raylib::BoundingBox box) {
-    return add_mod(new WhereCollides(box));
-  }
+  // TODO doesnt work in 2d
+  // struct WhereCollides : Modification {
+  // raylib::BoundingBox bounds;
+  //
+  // explicit WhereCollides(raylib::BoundingBox box) : bounds(box) {}
+  //
+  // virtual bool operator()(const Entity &entity) const override {
+  // return CheckCollisionBoxes(entity.get<Transform>().bounds(), bounds);
+  // }
+  // };
+  // auto &whereCollides(raylib::BoundingBox box) {
+  // return add_mod(new WhereCollides(box));
+  // }
   /////////
   struct UnderlyingOptions {
     bool stop_on_first = false;

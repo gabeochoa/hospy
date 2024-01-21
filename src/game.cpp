@@ -13,11 +13,11 @@
 
 int LOG_LEVEL = (int)LogLevel::INFO;
 
-void make_entity(Entity &entity, vec3 pos, vec2 size) {
+void make_entity(Entity &entity, vec2 pos, vec2 size) {
   entity.addComponent<Transform>().init(pos, size);
 }
 
-void make_card(Entity &entity, vec3 pos, vec2 size) {
+void make_card(Entity &entity, vec2 pos, vec2 size) {
   make_entity(entity, pos, size);
   entity.addComponent<IsDraggable>();
 }
@@ -29,10 +29,10 @@ Entity &make_entity(EntityType etype, vec2 pos, vec2 size) {
   case EntityType::x:
   case EntityType::y:
   case EntityType::z:
-    make_entity(e, vec::to3(pos), size);
+    make_entity(e, pos, size);
     break;
   case EntityType::Card:
-    make_card(e, vec::to3(pos), size);
+    make_card(e, pos, size);
     break;
   }
   return e;
@@ -40,13 +40,11 @@ Entity &make_entity(EntityType etype, vec2 pos, vec2 size) {
 
 using namespace raylib;
 
-RenderingSystem rendering_system;
-DraggingSystem dragging_system;
+SystemManager system_manager;
 
 void update() {
   auto &entities = EntityHelper::get_entities();
-  dragging_system.before_first();
-  dragging_system.run_on(entities, 0);
+  system_manager.on_update(entities, 0);
 }
 
 void draw() {
@@ -56,7 +54,7 @@ void draw() {
   ext::draw_fps(20, 20);
   DrawText(fmt::format("entities: {}", entities.size()).c_str(), 20, 50, 20,
            DARKGRAY);
-  rendering_system.run_on(entities, 0);
+  system_manager.on_render(entities, 0);
   EndDrawing();
 }
 
@@ -77,6 +75,7 @@ int main(int, char **) {
                      //
 
   make_entity(EntityType::Card, {200, 20}, {200, 80});
+  make_entity(EntityType::Card, {200, 200}, {200, 80});
 
   // Main game loop
   while (!WindowShouldClose()) // Detect window close button or ESC key
