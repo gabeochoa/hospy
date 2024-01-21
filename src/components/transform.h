@@ -9,11 +9,13 @@ struct Transform : public BaseComponent {
 
   vec2 size = {1.f, 1.f};
   vec2 position;
+  float z_index = 0;
 
   void update(vec2 p) { position = p; }
-  void init(vec2 p, vec2 sze) {
+  void init(vec2 p, vec2 sze, float z) {
     position = p;
     size = sze;
+    z_index = z;
   }
 
   [[nodiscard]] vec2 as2() const { return this->position; }

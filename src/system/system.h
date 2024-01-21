@@ -150,6 +150,17 @@ inline void rect(const Entity &entity, float, raylib::Color color) {
 
 } // namespace render
 
+struct PreRenderingSystem : System {
+  void run_on(Entities &entities, float) {
+    std::sort(entities.begin(), entities.end(),
+              [](const std::shared_ptr<Entity> a,
+                 const std::shared_ptr<Entity> b) -> bool {
+                return a->get<Transform>().z_index <
+                       b->get<Transform>().z_index;
+              });
+  }
+};
+
 struct RenderingSystem : System {
   void run_on(const Entities &entities, float dt) const {
     for_each(entities, dt, [](const Entity &entity, float dt) {
@@ -170,8 +181,11 @@ struct RenderingSystem : System {
 };
 
 struct SystemManager {
-  std::array<System *, 1> update_systems = {{
+  std::array<System *, 2> update_systems = {{
       new DraggingSystem(),
+
+      // should be always last
+      new PreRenderingSystem(),
   }};
 
   std::array<System *, 1> render_systems = {{

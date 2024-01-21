@@ -15,8 +15,21 @@
 
 int LOG_LEVEL = (int)LogLevel::INFO;
 
+float get_initial_z(EntityType type) {
+  switch (type) {
+  case EntityType::Unknown:
+  case EntityType::x:
+  case EntityType::y:
+  case EntityType::z:
+  case EntityType::TraySlot:
+    return 0.f;
+  case EntityType::Card:
+    return 1.f;
+  }
+}
+
 void make_entity(Entity &entity, vec2 pos, vec2 size) {
-  entity.addComponent<Transform>().init(pos, size);
+  entity.addComponent<Transform>().init(pos, size, get_initial_z(entity.type));
 }
 
 void make_card(Entity &entity, vec2 pos, vec2 size) {
