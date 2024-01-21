@@ -11,6 +11,7 @@ enum struct EntityType {
   x,
   y,
   z,
+  Card,
 };
 
 using EntityTypeSet = std::bitset<magic_enum::enum_count<EntityType>()>;

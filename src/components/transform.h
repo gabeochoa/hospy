@@ -24,6 +24,10 @@ struct Transform : public BaseComponent {
   [[nodiscard]] raylib::BoundingBox bounds() const {
     return get_bounds(this->position, vec::to3(this->size));
   }
+
+  [[nodiscard]] raylib::Rectangle rect() const {
+    return raylib::Rectangle{position.x, position.y, size.x, size.y};
+  }
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Transform &t) {

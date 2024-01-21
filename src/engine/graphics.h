@@ -46,14 +46,17 @@ typedef raylib::Vector4 vec4;
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
-/*
 namespace ext {
-
 // Drawing
 
 inline void draw_fps(int x, int y) { raylib::DrawFPS(x, y); }
 inline void clear_background(raylib::Color col) {
   raylib::ClearBackground(col);
+}
+
+inline void draw_rectangle(vec2 pos, vec2 size,
+                           raylib::Color color = raylib::PINK) {
+  raylib::DrawRectangleV(pos, size, color);
 }
 
 // AudioDevice
@@ -73,6 +76,16 @@ inline void set_clipboard_text(const char *text) {
 
 [[nodiscard]] inline vec2 get_mouse_position() {
   return raylib::GetMousePosition();
+}
+
+[[nodiscard]] inline bool is_mouse_down(int btn = 0) {
+  return raylib::IsMouseButtonDown(btn);
+}
+
+[[nodiscard]] inline bool is_mouse_inside(const raylib::Rectangle &rect) {
+  auto mouse = get_mouse_position();
+  return mouse.x >= rect.x && mouse.x <= rect.x + rect.width &&
+         mouse.y >= rect.y && mouse.y <= rect.y + rect.height;
 }
 
 [[nodiscard]] inline bool is_key_pressed(int keycode) {
@@ -97,4 +110,3 @@ inline void set_gamepad_mappings(const char *mappings) {
 }
 
 } // namespace ext
-  */
