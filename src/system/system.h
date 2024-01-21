@@ -121,15 +121,50 @@ struct DraggingSystem : System {
     entity.get<RenderTags>().disable_tag(RenderTagType::Highlight);
   }
 
+  void reset_highlighted_slots(Entity &entity, float) {
+    if (entity.is_missing<IsSlot>())
+      return;
+    entity.get<RenderTags>().disable_tag(RenderTagType::Highlight);
+  }
+
+  void highlight_possible_snap_location() {
+    auto maybe_e = EntityHelper::getEntityForID(active_id);
+    if (!maybe_e)
+      return;
+
+    Entity &entity = maybe_e.asE();
+    if (entity.is_missing<SnapsToSlot>())
+      return;
+
+    auto closest = EntityHelper::getClosestMatchingEntity(
+        entity.get<Transform>().as2(), 1920.f, [this](const Entity &entity) {
+          if (entity.is_missing<IsSlot>())
+            return false;
+          if (entity.get<IsSlot>().held_entity == active_id)
+            return true;
+          return entity.get<IsSlot>().is_empty();
+        });
+    if (!closest) {
+      return;
+    }
+    closest->get<RenderTags>().enable_tag(RenderTagType::Highlight);
+  }
+
+  void handle_draggable_entity(Entity &entity, float dt) {
+    if (entity.is_missing<IsDraggable>())
+      return;
+
+    determine_active(entity);
+    move_if_dragging(entity);
+  }
+
   virtual void run_on(Entities &entities, float dt) override {
     set_hot(EMPTY_ID);
 
     for_each(entities, dt, [this](Entity &entity, float dt) {
-      if (entity.is_missing<IsDraggable>())
-        return;
-
-      determine_active(entity);
-      move_if_dragging(entity);
+      reset_highlighted_slots(entity, dt);
+      highlight_possible_snap_location();
+      handle_draggable_entity(entity, dt);
     });
 
     if (mouse_down) {
